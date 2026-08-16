@@ -9,6 +9,10 @@ providers exist in one harness and lets each agent choose which one runs it.
 
 [中文说明](./README.zh-CN.md)
 
+## Overview
+
+dsh-loop-dock is a multi-loop dock for DeepSeek Harness. It expands the harness's single AgentFactory slot into loop registration, selection, binding, and delegation, so each agent can use its best-fit model and a dedicated core agent loop shaped to unlock that model's full potential — not a preset or a strategy wrapper, but the core loop itself. It currently ships the default headless driver, the official standard strategy slot, a Web default-driver setting, and durable per-session loop + driver binding. It also includes fake-driver: a local debug driver that never calls the network or a real model, always replying with [FAKE-DRIVER], making routing and restart recovery easy to verify. The dock itself is only plumbing; the real value will come from the community building excellent core agent loops.
+
 ## Why
 
 DSH already made the Agent Loop replaceable: the concrete loop is a plugin and

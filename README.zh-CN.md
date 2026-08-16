@@ -8,6 +8,10 @@
 
 [English](./README.md)
 
+## 概述
+
+dsh-loop-dock 是 DeepSeek Harness 的多 Agent Loop 拓展坞。它把原本唯一的 AgentFactory 槽位扩展为多 loop 的注册、选择、绑定和委托，让不同 Agent 既能使用最适合自己的模型，也能绑定一个能把该模型潜力发挥完全的专属核心 Agent Loop——不是 preset，也不是策略外壳，而是核心循环本身。目前已实现默认 headless driver、官方 standard 策略槽、Web 默认驱动设置和会话级 loop + driver 持久化，并内置 fake-driver：一个不联网、不调用真实模型的本地调试驱动，固定返回 [FAKE-DRIVER]，用于验证路由和重启恢复。项目本身只是抛砖引玉——dock 只负责接口，真正有价值的是社区未来写出更多优秀的核心 Agent Loop。
+
 ## 术语表
 
 本项目采用 DeepSeek Harness 自己的词汇（官方 `@deepseek-ai/dsh-agent-loop`
