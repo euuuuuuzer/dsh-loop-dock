@@ -1,0 +1,44 @@
+name: Loop proposal
+description: Propose a new agent loop, strategy loop, or model-specific loop.
+title: "[Loop] "
+labels: ["loop-proposal"]
+body:
+  - type: input
+    id: loop-name
+    attributes:
+      label: Proposed loop id
+      placeholder: e.g. planner-executor
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Loop kind
+      options:
+        - strategy loop
+        - driver loop
+        - not sure yet
+    validations:
+      required: true
+  - type: textarea
+    id: target
+    attributes:
+      label: Target model or agent role
+      description: Which model, model family, or agent role would this loop serve?
+  - type: textarea
+    id: design
+    attributes:
+      label: What would the loop change?
+      description: Turn structure, tool discipline, context management, planning, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Existing evidence or experiments
+      description: Links, measurements, or observations that motivate this loop.
+  - type: textarea
+    id: status
+    attributes:
+      label: Current status
+      description: Idea, prototype, or working implementation.

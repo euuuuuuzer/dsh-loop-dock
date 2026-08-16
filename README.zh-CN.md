@@ -2,11 +2,36 @@
 
 > 一个 Harness，多个 Agent Loop。
 
+[![CI](https://github.com/euuuuuuzer/dsh-loop-dock/actions/workflows/ci.yml/badge.svg)](https://github.com/euuuuuuzer/dsh-loop-dock/actions)
+[![GitHub release](https://img.shields.io/github/v/release/euuuuuuzer/dsh-loop-dock?include_prereleases&label=release)](https://github.com/euuuuuuzer/dsh-loop-dock/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Node >=22.19](https://img.shields.io/badge/node-%3E%3D22.19-green.svg)](./package.json)
+
 `dsh-loop-dock` 是 DeepSeek Harness（DSH）的社区基础设施插件。它不设计任何
 新的 Agent Loop，只提供让多个 Loop provider 同时存在、并让不同 Agent 选择
 不同 Loop 的“拓展坞”。
 
 [English](./README.md)
+
+## 快速开始
+
+1. 安装 DeepSeek Harness `0.1.0-rc.6` 和 `pnpm`。
+2. 从最新 GitHub Release 下载 `dsh-loop-dock-0.1.0.tgz`。
+3. 安装到干净的 web profile：
+
+   ```sh
+   dsh plugin --profile web add ./dsh-loop-dock-0.1.0.tgz
+   dsh web
+   ```
+
+4. 打开 Settings → General → Default driver，选择 `fake-driver`。
+5. 新建会话并发送任意消息，回复完全在本地生成：
+
+   ```text
+   [FAKE-DRIVER] fake driver reply — generated locally, no model call.
+   ```
+
+第一次验证不需要 API key，也不需要联网。
 
 ## 为什么需要 dsh-loop-dock？
 
@@ -136,6 +161,15 @@ Pre-alpha，但已经可以运行。
 dock 已经可以工作。下一步是生态。
 
 路线见 [docs/architecture.md](./docs/architecture.md)。
+
+## 常见问题
+
+- **preset、loop 和 driver 的区别** —— preset 定义工具和提示词段；driver 是引擎；loop 是 Agent 实际运行的完整循环。
+- **官方 `dsh-agent-loop`** —— dock 会禁用官方行并持有唯一的 `AgentFactory` 槽位；官方 loop 的 headless 衍生版本作为默认 driver。
+- **fake-driver** —— 本地调试驱动，不调用模型也不联网，固定返回 `[FAKE-DRIVER]`。
+- **loop 作者必须实现完整 driver 吗？** —— 不需要，策略 loop 只需实现 `setup(agentCtx)`；只有改变回合控制流本身时才需要驱动 loop。
+
+完整回答见 [docs/faq.zh-CN.md](./docs/faq.zh-CN.md)。
 
 ## 术语表
 
@@ -346,7 +380,8 @@ agent-loop-dock:
 
 ## Loop-provider 协议
 
-详见 [docs/loop-provider-spec.md](./docs/loop-provider-spec.md)。
+详见 [docs/loop-provider-spec.md](./docs/loop-provider-spec.md)。可以从
+[examples/loop-author-template](./examples/loop-author-template) 开始。
 
 Strategy Loop（常见用法）：
 

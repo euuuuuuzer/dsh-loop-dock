@@ -1,0 +1,13 @@
+{
+  "name": "dsh-loop-author-template",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Starter template for a dsh-loop-dock loop provider.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "peerDependencies": {
+    "dsh-loop-dock": "^0.1.0"
+  }
+}

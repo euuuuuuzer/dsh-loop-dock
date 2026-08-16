@@ -2,12 +2,37 @@
 
 > One harness. Multiple agent loops.
 
+[![CI](https://github.com/euuuuuuzer/dsh-loop-dock/actions/workflows/ci.yml/badge.svg)](https://github.com/euuuuuuzer/dsh-loop-dock/actions)
+[![GitHub release](https://img.shields.io/github/v/release/euuuuuuzer/dsh-loop-dock?include_prereleases&label=release)](https://github.com/euuuuuuzer/dsh-loop-dock/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Node >=22.19](https://img.shields.io/badge/node-%3E%3D22.19-green.svg)](./package.json)
+
 `dsh-loop-dock` is a community infrastructure plugin for
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It
 does **not** design a new agent loop. It provides the dock that lets many loop
 providers exist in one harness and lets each agent choose which one runs it.
 
 [中文说明](./README.zh-CN.md)
+
+## Quick Start
+
+1. Install DeepSeek Harness `0.1.0-rc.6` and `pnpm`.
+2. Download `dsh-loop-dock-0.1.0.tgz` from the latest GitHub Release.
+3. Install it into a clean web profile:
+
+   ```sh
+   dsh plugin --profile web add ./dsh-loop-dock-0.1.0.tgz
+   dsh web
+   ```
+
+4. Open Settings → General → Default driver and choose `fake-driver`.
+5. Create a new session and send any message. The reply is local:
+
+   ```text
+   [FAKE-DRIVER] fake driver reply — generated locally, no model call.
+   ```
+
+No API key or network is needed for this first check.
 
 ## Why dsh-loop-dock?
 
@@ -145,6 +170,15 @@ Pre-alpha, but runnable.
 The dock is working. The ecosystem is the next step.
 
 See [docs/architecture.md](./docs/architecture.md) for the roadmap.
+
+## FAQ
+
+- **preset, loop, and driver** — preset defines tools/prompt sections; driver is the engine; loop is the complete loop an agent runs.
+- **Official `dsh-agent-loop`** — the dock disables the official row and owns the single `AgentFactory` slot; a vendored headless derivative is the default driver.
+- **fake-driver** — a local debug driver that never calls a model or the network; it always replies with `[FAKE-DRIVER]`.
+- **Do loop authors need a full driver?** — no, strategy loops only implement `setup(agentCtx)`; a driver loop is only for changing turn control flow itself.
+
+Full answers: [docs/faq.md](./docs/faq.md).
 
 ## Terminology
 
@@ -370,7 +404,8 @@ is a natural next plugin on top of this dock, but it is not implemented yet.
 
 ## Loop-provider protocol
 
-See [docs/loop-provider-spec.md](./docs/loop-provider-spec.md).
+See [docs/loop-provider-spec.md](./docs/loop-provider-spec.md). Start from
+[examples/loop-author-template](./examples/loop-author-template).
 
 Strategy loop (the common case):
 

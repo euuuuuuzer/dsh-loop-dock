@@ -112,6 +112,12 @@ use a composite slot id such as `loop2.strategy3` plus `driver: 'loop2'`.
 
 ## Examples
 
+Copy the loop author starter as a starting point:
+
+```sh
+cp -R examples/loop-author-template my-loop
+```
+
 Fake demos (both run without DSH):
 
 ```sh

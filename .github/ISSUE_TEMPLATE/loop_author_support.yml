@@ -1,0 +1,36 @@
+name: Loop author support
+description: Ask for help while building or integrating a loop with dsh-loop-dock.
+title: "[Loop support] "
+labels: ["loop-author"]
+body:
+  - type: input
+    id: loop-name
+    attributes:
+      label: Loop id
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Loop kind
+      options:
+        - strategy loop
+        - driver loop
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Current definition or error
+      description: Paste the loop definition, profile patch, or error message.
+      render: shell
+  - type: textarea
+    id: expected
+    attributes:
+      label: What are you trying to achieve?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
