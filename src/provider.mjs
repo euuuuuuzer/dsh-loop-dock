@@ -1,8 +1,8 @@
 /**
  * Loop-provider helpers.
  *
- * Strategy loops are the 90% case: they reuse one driver and only install a
- * per-agent setup. Driver loops are the escape hatch for authors who need a
+ * Strategy loops are the common case: they reuse one driver and only install
+ * a per-agent setup. Driver loops are for authors who need a completely
  * completely different turn/step control flow.
  */
 

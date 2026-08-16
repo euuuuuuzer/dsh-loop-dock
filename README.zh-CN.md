@@ -17,15 +17,15 @@
 | --- | --- | --- |
 | **driver（驱动）** | 实现 `createAgent`/`resume` 契约并驱动回合的核心 agent loop（`HeadlessAgentLoop` 就是 vendor 的官方驱动）。 | 官方 DSH：*agent loop* / *driver*（"agent factory and driver service"）。其他 harness 常叫 *engine*（如 Codex engine）——DSH 不用这个词。 |
 | **loop（loop 条目）** | agent 实际运行的**完整 loop**，注册在 `LoopRegistry` 里：**策略 loop**（复用驱动 + 装 agent 作用域 setup）或 **驱动 loop**（`kind: 'driver'`，一套完整自定义驱动）。`loop` 是整个循环，`driver` 只是其中的引擎层。 | 社区常说的 *agent loop*。不要把引擎层叫成 loop。 |
-| **strategy loop（策略 loop）** | 复用某个驱动，只装 per-agent setup（挂 preset、加 hook）。覆盖 90% 场景。 | 大致相当于：在一个引擎之上叠 preset/profile + 适配器。 |
-| **driver loop（驱动 loop）** | 本身就是一套完整驱动（`createAgent`/`resume`），给真正不同的控制流当逃生舱。 | 大致相当于：完整的 engine 实现。 |
+| **strategy loop（策略 loop）** | 复用某个驱动，只安装 agent 作用域的 setup（挂载 preset、添加 hook）。这是常见用法。 | 大致相当于：在一个引擎之上叠加 preset/profile 和适配器。 |
+| **driver loop（驱动 loop）** | 本身就是一套完整驱动（`createAgent`/`resume`），用于与默认驱动不同的控制流。 | 大致相当于：完整的 engine 实现。 |
 | **preset** | DSH 的会话组合（工具 + 提示词段），由原生选择器选定。 | 官方 DSH：*preset*。注意：日常对话里 "preset" 有时被误当成 loop——我们一律指"工具/提示词组合"。 |
 | **model route（模型路由）** | 会话请求所用的 provider/model（+ reasoningEffort）。 | 社区：model config / 模型选择。 |
 | **AgentFactory** | `createAgent`/`resume` 契约（`ctx.agents.setFactory` 委托的目标）。 | 官方 DSH：*AgentFactory*。 |
 | **harness** | 整个 agent 运行平台（DSH 本身、Codex 等）。 | 生态通用词。 |
 | **binding（绑定）** | dock 在创建会话时记录的持久化 `{ loop, driver? }` 选择（`agent-preset/selected` 事件的 `data.agentLoopDock`）。 | 记录下来的选择 / 路由绑定。 |
 
-一个速记心智模型：**preset** 是 agent *拥有*的东西（工具/提示词），**driver** 是驱动回合的引擎，**loop** 是 agent 实际运行的完整循环（策略 loop = driver + setup；驱动 loop = 一套完整自定义 driver），**model route** 决定由哪个 LLM 回答。会话选 preset → dock 推导 loop → loop（或设置行）选 driver → 请求走 model route。
+这些概念的关系如下：**preset** 定义工具和提示词段，**driver** 执行回合，**loop** 是 agent 实际运行的完整循环（策略 loop = driver + setup；驱动 loop = 一套完整自定义 driver），**model route** 决定由哪个 LLM 回答。会话选择 preset → dock 推导 loop → loop（或设置行）选择 driver → 请求使用 model route。
 
 命名规则：`driver` 只表示引擎，`loop` 表示完整循环；不要为了迎合社区口语而把 `driver` 改叫 agent loop。
 
@@ -252,7 +252,7 @@ agent-loop-dock:
 
 详见 [docs/loop-provider-spec.md](./docs/loop-provider-spec.md)。
 
-Strategy Loop（覆盖 90% 场景）：
+Strategy Loop（常见用法）：
 
 ```js
 dock.register({
@@ -265,7 +265,7 @@ dock.register({
 })
 ```
 
-Driver Loop（控制流逃生舱）：
+Driver Loop（自定义控制流）：
 
 ```js
 dock.register({

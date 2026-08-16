@@ -56,15 +56,15 @@ Names follow DeepSeek Harness's own vocabulary (the official package
 | --- | --- | --- |
 | **driver** | The core agent-loop implementation that owns the `createAgent`/`resume` contract and drives turns (`HeadlessAgentLoop` is the vendored official driver). | Official DSH: *agent loop* / *driver* ("agent factory and driver service"). Other harnesses often say *engine* (e.g. Codex engine) — DSH does not use that word. |
 | **loop** | The COMPLETE loop an agent runs, as registered in the `LoopRegistry`: a **strategy loop** (reuses a driver + installs agent-scoped setup) or a **driver loop** (`kind: 'driver'`, a full custom driver). `loop` is the whole loop; `driver` is only its engine part. | Community: *agent loop* / *loop*. Do not use "loop" for the engine layer. |
-| **strategy loop** | A loop that reuses a driver and only installs per-agent setup (mount a preset, add hooks). The 90% case. | Roughly: a preset/profile plus an adapter on top of one engine. |
-| **driver loop** | A loop that IS a complete driver (`createAgent`/`resume`), the escape hatch for genuinely different control flow. | Roughly: a full engine implementation. |
+| **strategy loop** | A loop that reuses a driver and only installs per-agent setup (mount a preset, add hooks). This is the common case. | Roughly: a preset/profile plus an adapter on top of one engine. |
+| **driver loop** | A loop that IS a complete driver (`createAgent`/`resume`), for control flow that differs from the default driver. | Roughly: a full engine implementation. |
 | **preset** | DSH's per-session composition (tools + prompt sections), selected via the native picker. | Official DSH: *preset*. Note: in everyday conversation "preset" sometimes means the loop — we always mean the tool/prompt composition. |
 | **model route** | The provider/model (+ reasoningEffort) a session's requests use. | Community: model config / model selection. |
 | **AgentFactory** | The `createAgent`/`resume` contract the factory registry delegates to (`ctx.agents.setFactory`). | Official DSH: *AgentFactory*. |
 | **harness** | The whole agent runtime platform (DSH itself, or Codex, etc.). | Common term across the ecosystem. |
 | **binding** | The durable `{ loop, driver? }` selection the dock records on a session at creation (`agent-preset/selected` `data.agentLoopDock`). | Recorded selection / route binding. |
 
-A quick mental model: **preset** is what the agent *has* (tools/prompt), **driver** is the engine that *drives* turns, **loop** is the complete loop an agent runs (strategy loop = driver + setup; driver loop = a full custom driver), and **model route** decides which LLM answers. Sessions pick a preset; the dock derives the loop; the loop (or settings) picks the driver; the request uses the model route.
+These concepts relate as follows: **preset** defines the tools and prompt sections, **driver** executes turns, **loop** is the complete loop an agent runs (strategy loop = driver + setup; driver loop = a full custom driver), and **model route** decides which LLM answers. Sessions pick a preset; the dock derives the loop; the loop (or settings) picks the driver; the request uses the model route.
 
 Naming rule: keep `driver` for the engine and `loop` for the complete loop. Do not rename `driver` to "agent loop" — that would erase the official DSH distinction between the engine and the full loop.
 
@@ -124,7 +124,7 @@ so one dock supports arbitrary driver × strategy combinations. A
 to implement turn/step control flow.
 
 An **driver loop** owns the complete `createAgent` / `resume` contract. It is
-the escape hatch for loops whose control flow genuinely differs.
+for loops whose control flow differs from the default driver.
 
 ## Install
 
@@ -273,7 +273,7 @@ is a natural next plugin on top of this dock, but it is not implemented yet.
 
 See [docs/loop-provider-spec.md](./docs/loop-provider-spec.md).
 
-Strategy loop (the 90% case):
+Strategy loop (the common case):
 
 ```js
 dock.register({
@@ -286,7 +286,7 @@ dock.register({
 })
 ```
 
-Driver loop (control-flow escape hatch):
+Driver loop (custom control flow):
 
 ```js
 dock.register({
