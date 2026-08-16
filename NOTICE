@@ -1,0 +1,25 @@
+dsh-loop-dock is an independent community project for DeepSeek Harness.
+It is not an official DeepSeek project and is not affiliated with or
+endorsed by DeepSeek.
+
+This repository vendors a derivative of the compiled lib/index.js from
+@deepseek-ai/dsh-agent-loop 0.1.0-rc.6:
+
+  vendor/dsh-agent-loop-headless/index.js
+
+Upstream repository:
+
+  https://github.com/deepseek-ai/deepseek-harness
+
+Upstream license and copyright are retained in:
+
+  vendor/dsh-agent-loop-headless/LICENSE.upstream.txt
+
+The full list of local modifications is in:
+
+  vendor/dsh-agent-loop-headless/README.md
+
+The vendored driver is used solely as the default turn/step driver behind
+the dsh-loop-dock strategy-loop slots.
+
+DeepSeek and DeepSeek Harness are names of their respective owner.

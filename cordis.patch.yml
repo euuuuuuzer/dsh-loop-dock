@@ -1,0 +1,53 @@
+# dsh-loop-dock bundle patch.
+#
+# Applied after dsh-base and dsh-web-app when this package is installed as a
+# profile bundle (`dsh plugin --profile <name> add dsh-loop-dock`).
+#
+# The official `agent-loop` row must be disabled: it self-registers as the
+# one AgentFactory via ctx.agents.setFactory(), and the dock must own that
+# single slot. The dock row below replaces it.
+
+- id: agent-loop
+  disabled: true
+
+- insert:
+    - id: agent-loop-dock
+      name: 'dsh-loop-dock'
+      config:
+        # Loop used when nothing else selects one.
+        defaultLoop: standard
+
+        # Default driver for strategy loops that do not bind one explicitly.
+        defaultDriver: default
+
+        # Optional preset -> loop mapping. This lets the existing DSH preset
+        # picker (and the durable SessionHeader.agentPreset field) also select
+        # a loop with zero UI changes. Values may be a loop id or
+        # { loop: id, driver: name }.
+        presetLoops:
+          # Every shipped official mode runs the standard loop by default.
+          standard: standard
+          minimal: standard
+          code: standard
+          cordis: standard
+
+        # Optional exact session-id -> loop routes. Values may be a loop id or
+        # { loop: id, driver: name }.
+        sessionLoops: {}
+
+        # Declarative agents owned by the dock. Each entry supports:
+        #   id, loop, sessionId | resumeSessionId, provider, model,
+        #   maxTokens, reasoningEffort, cwd
+        agents: []
+
+    # The default driver: a vendored, dock-safe derivative of the official
+    # dsh-agent-loop. It injects `agentLoopDock`, so it activates only after
+    # the dock owns the factory slot.
+    - id: agent-loop-dock-default-driver
+      name: 'dsh-loop-dock/headless-driver'
+      config:
+        maxParallelToolCalls: 10
+        # Register the local fake-driver too. The effective default stays
+        # `default`; the fake driver only adds a selectable second driver for
+        # zero-key routing tests. Set false here to ship without it.
+        fakeDriver: true

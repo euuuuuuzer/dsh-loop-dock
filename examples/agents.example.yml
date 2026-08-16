@@ -1,0 +1,28 @@
+# Example declarative agents for dsh-loop-dock.
+#
+# This is not a loader file; it shows the config shape for the dock row once
+# the headless default driver adapter is installed.
+#
+defaultLoop: standard
+defaultDriver: default
+
+presetLoops:
+  standard: standard
+
+# A route value may also bind both dimensions:
+#   session-1: { loop: strategy1, driver: loop2 }
+
+agents:
+  - id: planner
+    provider: provider-a
+    model: model-a
+    loop: standard
+    reasoningEffort: max
+    sessionId: planner-session
+
+  - id: coder
+    provider: provider-b
+    model: model-b
+    loop: standard
+    reasoningEffort: max
+    sessionId: coder-session
