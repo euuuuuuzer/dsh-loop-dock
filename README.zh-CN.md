@@ -27,7 +27,6 @@
 
 这些概念的关系如下：**preset** 定义工具和提示词段，**driver** 执行回合，**loop** 是 agent 实际运行的完整循环（策略 loop = driver + setup；驱动 loop = 一套完整自定义 driver），**model route** 决定由哪个 LLM 回答。会话选择 preset → dock 推导 loop → loop（或设置行）选择 driver → 请求使用 model route。
 
-命名规则：`driver` 只表示引擎，`loop` 表示完整循环；不要为了迎合社区口语而把 `driver` 改叫 agent loop。
 
 ## 为什么做
 
@@ -52,10 +51,11 @@ dock 不理解任何 Loop 的内部逻辑，它只负责：注册、选择、绑
 
 ### 只改 preset，能力已经变化很大
 
-社区插件已经证明，围绕官方 loop 做一点“外围处理”——先用最小工具集、第一次
-工具调用后再展开完整工具集的 preset，一段提示词，一个 bootstrap hook——就能
-让同一个模型表现得像另一个 agent。在 DeepSeek 上这一点尤其明显，因为 DSH
-正好把这些接缝暴露了出来，而 DeepSeek 对工具与提示词纪律也格外敏感。
+社区插件已经证明，围绕官方 loop 做一点“外围处理”——例如先用最小工具集、
+第一次工具调用后再展开完整工具集的 preset，或者添加一段提示词和一个
+bootstrap hook——就能让同一个模型表现出明显不同的能力。在 DeepSeek 上这一
+点尤其明显，因为 DSH 正好把这些接缝暴露了出来，而 DeepSeek 对工具与提示词
+纪律也格外敏感。
 
 这就引出了本项目真正想问的问题：如果只是改一个 loop 外面的 preset 和 setup
 就能解锁这么多能力，那把整个 loop 换掉会怎样？dock 不负责回答这个问题，它

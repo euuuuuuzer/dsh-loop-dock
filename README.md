@@ -36,8 +36,8 @@ bind, and delegate.
 
 Community plugins have already shown that small changes *around* the official
 loop — a preset that starts minimal and expands tools after the first tool
-call, a prompt section, a bootstrap hook — can make the same model behave like
-a different agent. On DeepSeek this effect is especially visible, because the
+call, a prompt section, a bootstrap hook — can give the same model meaningfully
+different behavior. On DeepSeek this effect is especially visible, because the
 harness exposes exactly those seams and the model responds strongly to tool
 and prompt discipline.
 
@@ -66,7 +66,6 @@ Names follow DeepSeek Harness's own vocabulary (the official package
 
 These concepts relate as follows: **preset** defines the tools and prompt sections, **driver** executes turns, **loop** is the complete loop an agent runs (strategy loop = driver + setup; driver loop = a full custom driver), and **model route** decides which LLM answers. Sessions pick a preset; the dock derives the loop; the loop (or settings) picks the driver; the request uses the model route.
 
-Naming rule: keep `driver` for the engine and `loop` for the complete loop. Do not rename `driver` to "agent loop" — that would erase the official DSH distinction between the engine and the full loop.
 
 ## Status
 
