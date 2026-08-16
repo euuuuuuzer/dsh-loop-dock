@@ -8,9 +8,134 @@
 
 [English](./README.md)
 
-## 概述
+## 为什么需要 dsh-loop-dock？
 
-dsh-loop-dock 是 DeepSeek Harness 的多 Agent Loop 拓展坞。它把原本唯一的 AgentFactory 槽位扩展为多 loop 的注册、选择、绑定和委托，让不同 Agent 既能使用最适合自己的模型，也能绑定一个能把该模型潜力发挥完全的专属核心 Agent Loop——不是 preset，也不是策略外壳，而是核心循环本身。目前已实现默认 headless driver、官方 standard 策略槽、Web 默认驱动设置和会话级 loop + driver 持久化，并内置 fake-driver：一个不联网、不调用真实模型的本地调试驱动，固定返回 [FAKE-DRIVER]，用于验证路由和重启恢复。项目本身只是抛砖引玉——dock 只负责接口，真正有价值的是社区未来写出更多优秀的核心 Agent Loop。
+模型的能力上限并不只取决于模型本身。同一个模型，在回合结构、工具纪律、上下文管理、规划策略和执行流程不同的情况下，表现可能完全不同。
+
+社区插件已经证明了这一点：只围绕一个 loop 做很小的改动——最小优先的 preset、一段提示词、一个 bootstrap hook——就能让同一个模型表现出明显不同的能力。
+
+DSH 已经把 Agent Loop 做成了插件，但实际使用中仍然只有一个槽位：
+
+```
+Agent A ─┐
+Agent B ─┼──> Loop X
+Agent C ─┘
+```
+
+`dsh-loop-dock` 迈出下一步：
+
+```
+Agent A ──> Loop X
+Agent B ──> Loop Y
+Agent C ──> Loop Z
+```
+
+一个 Harness。多个专用 loop。
+
+## dock 做什么？
+
+dock 刻意做得很简单。它不决定 loop 如何推理。
+
+它只提供：
+
+- loop 注册
+- loop 选择
+- Agent-loop 绑定
+- driver 委托
+
+社区负责写 loop，dock 让这些 loop 可以组合使用。
+
+## 示例
+
+未来的 DSH 配置可以是这样：
+
+```yaml
+agent-loop-dock:
+  agents:
+    - id: coder
+      provider: deepseek-official
+      model: deepseek-v4-pro
+      loop: coding-loop
+
+    - id: researcher
+      provider: deepseek-official
+      model: deepseek-v4-flash
+      loop: research-loop
+
+    - id: planner
+      provider: provider-c
+      model: model-c
+      loop: planning-loop
+```
+
+`coding-loop`、`research-loop` 和 `planning-loop` 是社区注册的 loop。每个
+Agent 得到的是：
+
+```
+一个 Agent
++ 一个合适的模型
++ 一个合适的 loop
+```
+
+而不是让所有模型和任务都走同一种执行模式。
+
+## 不需要模型 key 就能体验
+
+默认 patch 会在真实 `default` driver 旁边注册 `fake-driver`。在 Settings
+里把默认驱动切成 `fake-driver`，新建会话并发送任意消息，它会本地返回：
+
+```text
+[FAKE-DRIVER] fake driver reply — generated locally, no model call.
+```
+
+整个过程不需要 API key，也不需要联网。一分钟内就能看到 loop 和 driver
+路由确实在生效。
+
+## 架构
+
+```text
+ctx.agents.create / resume
+        |
+        v
+   dsh-loop-dock
+   (AgentFactory layer)
+        |
+        +-- LoopRegistry
+              |     |     |
+              v     v     v
+            Loop A Loop B Loop C
+                    |
+                    v
+              Agent Driver
+                    |
+                    v
+                  Model
+```
+
+dock 区分两种 loop：
+
+- **策略 loop** —— 复用现有 driver，只安装 Agent 作用域的 setup，例如
+  提示词、preset、hook、工具和策略。这是常见用法。
+- **驱动 loop** —— 一套完整的自定义 loop 实现，自己负责 `createAgent`、
+  `resume` 和回合控制流。用于与默认执行架构完全不同的场景。
+
+## 实现状态
+
+Pre-alpha，但已经可以运行。
+
+- ✅ Loop registry
+- ✅ Agent → loop 路由
+- ✅ 持久化 loop + driver 绑定
+- ✅ driver 选择
+- ✅ 策略 loop 协议
+- ✅ 驱动 loop 协议
+- ✅ 默认 headless driver
+- ✅ 官方 `standard` 策略槽
+- ✅ 多 Agent 集成测试
+
+dock 已经可以工作。下一步是生态。
+
+路线见 [docs/architecture.md](./docs/architecture.md)。
 
 ## 术语表
 
@@ -32,40 +157,7 @@ dsh-loop-dock 是 DeepSeek Harness 的多 Agent Loop 拓展坞。它把原本唯
 这些概念的关系如下：**preset** 定义工具和提示词段，**driver** 执行回合，**loop** 是 agent 实际运行的完整循环（策略 loop = driver + setup；驱动 loop = 一套完整自定义 driver），**model route** 决定由哪个 LLM 回答。会话选择 preset → dock 推导 loop → loop（或设置行）选择 driver → 请求使用 model route。
 
 
-## 为什么做
-
-DSH 已经让 Agent Loop 成为可替换插件：具体 Loop 通过唯一的 `AgentFactory`
-向 `ctx.agents` 注册。但目前这个接缝是单槽的：
-
-```
-Agent A ─┐
-Agent B ─┼──> Loop X
-Agent C ─┘
-```
-
-本项目探索的是“复数”：
-
-```
-Agent A ──> Loop X
-Agent B ──> Loop Y
-Agent C ──> Loop Z
-```
-
-dock 不理解任何 Loop 的内部逻辑，它只负责：注册、选择、绑定、委托。
-
-### 只改 preset，能力已经变化很大
-
-社区插件已经证明，围绕官方 loop 做一点“外围处理”——例如先用最小工具集、
-第一次工具调用后再展开完整工具集的 preset，或者添加一段提示词和一个
-bootstrap hook——就能让同一个模型表现出明显不同的能力。在 DeepSeek 上这一
-点尤其明显，因为 DSH 正好把这些接缝暴露了出来，而 DeepSeek 对工具与提示词
-纪律也格外敏感。
-
-这就引出了本项目真正想问的问题：如果只是改一个 loop 外面的 preset 和 setup
-就能解锁这么多能力，那把整个 loop 换掉会怎样？dock 不负责回答这个问题，它
-只负责让这个问题变得可以低成本地实验。
-
-## 当前状态
+## 实现清单
 
 **Pre-alpha 但已可运行：路由核心、vendor 的 headless 官方驱动、内置的官方
 `standard` 策略槽已经一起实现并通过集成测试。**

@@ -9,15 +9,18 @@ providers exist in one harness and lets each agent choose which one runs it.
 
 [中文说明](./README.zh-CN.md)
 
-## Overview
+## Why dsh-loop-dock?
 
-dsh-loop-dock is a multi-loop dock for DeepSeek Harness. It expands the harness's single AgentFactory slot into loop registration, selection, binding, and delegation, so each agent can use its best-fit model and a dedicated core agent loop shaped to unlock that model's full potential — not a preset or a strategy wrapper, but the core loop itself. It currently ships the default headless driver, the official standard strategy slot, a Web default-driver setting, and durable per-session loop + driver binding. It also includes fake-driver: a local debug driver that never calls the network or a real model, always replying with [FAKE-DRIVER], making routing and restart recovery easy to verify. The dock itself is only plumbing; the real value will come from the community building excellent core agent loops.
+A model's ceiling is not the model alone. The same model can behave very
+differently depending on turn structure, tool discipline, context management,
+planning strategy, and execution workflow.
 
-## Why
+Community plugins have already shown this: small changes around one loop —
+a minimal-first preset, a prompt section, a bootstrap hook — can give the same
+model meaningfully different behavior.
 
-DSH already made the Agent Loop replaceable: the concrete loop is a plugin and
-the agent registry delegates creation to one `AgentFactory`. Today that seam is
-single-slot:
+DSH already made the Agent Loop a plugin, but the slot is still effectively
+single:
 
 ```
 Agent A ─┐
@@ -25,7 +28,7 @@ Agent B ─┼──> Loop X
 Agent C ─┘
 ```
 
-This project explores multiplicity:
+`dsh-loop-dock` opens the next step:
 
 ```
 Agent A ──> Loop X
@@ -33,22 +36,115 @@ Agent B ──> Loop Y
 Agent C ──> Loop Z
 ```
 
-The dock does not know how a loop works. It only knows how to register, select,
-bind, and delegate.
+One harness. Multiple specialized loops.
 
-### Preset changes already move the needle
+## What does the dock do?
 
-Community plugins have already shown that small changes *around* the official
-loop — a preset that starts minimal and expands tools after the first tool
-call, a prompt section, a bootstrap hook — can give the same model meaningfully
-different behavior. On DeepSeek this effect is especially visible, because the
-harness exposes exactly those seams and the model responds strongly to tool
-and prompt discipline.
+The dock is intentionally simple. It does not decide how a loop reasons.
 
-That raises the question this project is built around: if changing the preset
-and setup around one loop already unlocks that much, what happens when we
-change the loop itself? The dock does not answer that question — it makes the
-question cheap to ask.
+It provides:
+
+- loop registration
+- loop selection
+- agent-loop binding
+- driver delegation
+
+The community builds the loops. The dock makes them composable.
+
+## Example
+
+A future DSH setup could look like:
+
+```yaml
+agent-loop-dock:
+  agents:
+    - id: coder
+      provider: deepseek-official
+      model: deepseek-v4-pro
+      loop: coding-loop
+
+    - id: researcher
+      provider: deepseek-official
+      model: deepseek-v4-flash
+      loop: research-loop
+
+    - id: planner
+      provider: provider-c
+      model: model-c
+      loop: planning-loop
+```
+
+`coding-loop`, `research-loop`, and `planning-loop` are community-registered
+loops. Each agent gets:
+
+```
+one agent
++ one suitable model
++ one suitable loop
+```
+
+instead of forcing every model and task through the same execution pattern.
+
+## Try it without a model key
+
+The bundled patch registers `fake-driver` next to the real `default` driver.
+Switch the Settings row to `fake-driver`, create a new session, and send any
+message. It replies locally:
+
+```text
+[FAKE-DRIVER] fake driver reply — generated locally, no model call.
+```
+
+No API key and no network are involved. This makes loop and driver routing
+visible in the first minute.
+
+## Architecture
+
+```text
+ctx.agents.create / resume
+        |
+        v
+   dsh-loop-dock
+   (AgentFactory layer)
+        |
+        +-- LoopRegistry
+              |     |     |
+              v     v     v
+            Loop A Loop B Loop C
+                    |
+                    v
+              Agent Driver
+                    |
+                    v
+                  Model
+```
+
+The dock separates two concepts:
+
+- **Strategy loop** — reuses an existing driver and only installs agent-scoped
+  setup such as prompts, presets, hooks, tools, and policies. This is the
+  common case.
+- **Driver loop** — a complete custom loop implementation owning
+  `createAgent`, `resume`, and turn control flow. This is for fundamentally
+  different execution architectures.
+
+## Current Status
+
+Pre-alpha, but runnable.
+
+- ✅ Loop registry
+- ✅ Agent → loop routing
+- ✅ Durable loop + driver binding
+- ✅ Driver selection
+- ✅ Strategy loop protocol
+- ✅ Driver loop protocol
+- ✅ Default headless driver
+- ✅ Official `standard` strategy slot
+- ✅ Multi-agent integration tests
+
+The dock is working. The ecosystem is the next step.
+
+See [docs/architecture.md](./docs/architecture.md) for the roadmap.
 
 ## Terminology
 
@@ -71,7 +167,7 @@ Names follow DeepSeek Harness's own vocabulary (the official package
 These concepts relate as follows: **preset** defines the tools and prompt sections, **driver** executes turns, **loop** is the complete loop an agent runs (strategy loop = driver + setup; driver loop = a full custom driver), and **model route** decides which LLM answers. Sessions pick a preset; the dock derives the loop; the loop (or settings) picks the driver; the request uses the model route.
 
 
-## Status
+## Implementation status
 
 **Pre-alpha but runnable: the routing core, the vendored headless official
 driver, and the shipped official `standard` strategy slot are implemented and tested together.**
